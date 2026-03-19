@@ -85,7 +85,7 @@ const newCallApplyDefault = true;   // can be set to true or false
 ### Installation Steps:
 
 1. Download the ``audio-toggle.js`` file and upload it to your Webex Devices Macro editor via the web interface.
-2. Configure the macros devices and presets in the configuration section.
+2. Configure the macros modes and other settings, there are comments in the config section to help with this.
 3. Enable the Macro on the editor.
 
 ## Demo
