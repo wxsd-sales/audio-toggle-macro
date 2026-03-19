@@ -71,7 +71,7 @@ const modes = [               // Array of Audio Modes
   }
 ]
 
-const defaultMode = 'Mode 1';       // Name of the mode which is applied when the marco starts
+const defaultMode = 'Mode 1';       // Name of the mode which is applied when the macro starts
 
 const newCallApplyDefault = true;   // Set to true if you want default mode always applied upon joining a new call
 

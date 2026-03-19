@@ -34,7 +34,7 @@ const modes = [               // Array of Audio Modes
   {
     name: 'Mode 2',
     config: () => {
-      // Example where Mode 1 Sets Ethernet 2 On and 1, 3, 4 Off
+      // Example where Mode 2 Sets Ethernet 2 On and 1, 3, 4 Off
       xapi.Config.Audio.Input.Ethernet[1].Mode.set('Off');
       xapi.Config.Audio.Input.Ethernet[2].Mode.set('On');
       xapi.Config.Audio.Input.Ethernet[3].Mode.set('Off');
@@ -44,7 +44,7 @@ const modes = [               // Array of Audio Modes
   {
     name: 'Mode 3',
     config: () => {
-      // Example where Mode 1 Sets Ethernet 3 On and 1, 2, 4 Off
+      // Example where Mode 3 Sets Ethernet 3 On and 1, 2, 4 Off
       xapi.Config.Audio.Input.Ethernet[1].Mode.set('Off');
       xapi.Config.Audio.Input.Ethernet[2].Mode.set('Off');
       xapi.Config.Audio.Input.Ethernet[3].Mode.set('On');
@@ -54,7 +54,7 @@ const modes = [               // Array of Audio Modes
   {
     name: 'Mode 4',
     config: () => {
-      // Example where Mode 1 Sets Ethernet 4 On and 1, 2, 3 Off
+      // Example where Mode 4 Sets Ethernet 4 On and 1, 2, 3 Off
       xapi.Config.Audio.Input.Ethernet[1].Mode.set('Off');
       xapi.Config.Audio.Input.Ethernet[2].Mode.set('Off');
       xapi.Config.Audio.Input.Ethernet[3].Mode.set('Off');
@@ -63,11 +63,11 @@ const modes = [               // Array of Audio Modes
   }
 ]
 
-const defaultMode = 'Mode 1';       // Name of the mode which is applied when the marco starts
+const defaultMode = 'Mode 1';       // Name of the mode which is applied when the macro starts
 
 ```
 
-Lastly, the macro by default automatically applies the default audio mode upon joining a new RoomOS or MTR call. This can be feature can be disabled by setting the macro config `newCallApplyDefault` variable to `false`.
+Lastly, the macro by default automatically applies the default audio mode upon joining a new RoomOS or MTR call. This feature can be disabled by setting the  `newCallApplyDefault` in the macros config to `false`.
 
 ```javascript
 const newCallApplyDefault = true;   // can be set to true or false
