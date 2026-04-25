@@ -35,6 +35,9 @@ async function seedEthernetConnectorStreams(xapi, streamsByConnectorId) {
 }
 
 function mockUiExtensionCommands(xapi) {
+  xapi.Command.UserInterface.Message.Alert.Display.mockResolvedValue({
+    status: "OK",
+  });
   xapi.Command.UserInterface.Message.Prompt.Display.mockResolvedValue({
     status: "OK",
   });
@@ -205,6 +208,28 @@ describe("audio-toggle macro", () => {
         "Option.1": "Cancel Audio Reset",
         "Option.2": "Reset Audio Now",
         Text: "Audio settings will reset to defaults in 5 minutes.",
+        Title: "Audio Settings",
+      });
+    } finally {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    }
+  });
+
+  it("shows an alert when audio settings are reset to defaults after a call", async () => {
+    const xapi = await loadMacroWithXapi({ activeCalls: 1 });
+    xapi.Command.UserInterface.Message.Alert.Display.mockClear();
+
+    jest.useFakeTimers();
+    try {
+      await xapi.Status.SystemUnit.State.NumberOfActiveCalls.set(0);
+      await jest.advanceTimersByTimeAsync(5 * 60 * 1000);
+
+      expect(
+        xapi.Command.UserInterface.Message.Alert.Display,
+      ).toHaveBeenCalledWith({
+        Duration: 10,
+        Text: "Room audio settings have been reset to defaults.",
         Title: "Audio Settings",
       });
     } finally {

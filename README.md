@@ -50,8 +50,14 @@ Lastly, the macro can automatically reapply the default group states after a cal
 
 ```javascript
 const applyDefaultAfterCall = true;
+const allowUserCancelDefaults = true;
 const applyDefaultDelayMinutes = 5;
+const showAlertWhenApplyDefaults = true;
 ```
+
+When `allowUserCancelDefaults` is `true`, the macro waits for `applyDefaultDelayMinutes` after the call ends and shows a RoomOS message prompt so users in the room can cancel the scheduled reset. When `allowUserCancelDefaults` is `false`, the macro reapplies the defaults immediately after the call ends.
+
+When `showAlertWhenApplyDefaults` is `true`, the macro shows a RoomOS message alert after the default audio settings have been reapplied. This notification tells users in the room that the audio settings have been reset to defaults. Set it to `false` to reset silently. The startup default apply does not show this alert.
 
 
 ## Setup

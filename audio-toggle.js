@@ -53,8 +53,9 @@ const groups = [
 ];
 
 const applyDefaultAfterCall = true;
-const applyDefaultDelayMinutes = 5;
 const allowUserCancelDefaults = true;
+const applyDefaultDelayMinutes = 5;
+const showAlertWhenApplyDefaults = true;
 
 /*********************************************************
  * Do not change below
@@ -147,8 +148,13 @@ function processCalls(value) {
 
   hadActiveCall = false;
 
+  if (!allowUserCancelDefaults) {
+    selectDefaultAfterCall();
+    return;
+  }
+
   defaultTimerId = setTimeout(
-    selectDefault,
+    selectDefaultAfterCall,
     applyDefaultDelayMinutes * 60 * 1000,
   );
 
@@ -162,6 +168,15 @@ function processCalls(value) {
   }).catch((error) =>
     console.warn(
       `Unable to show audio reset prompt: ${getXapiErrorMessage(error)}`,
+    ),
+  );
+}
+
+function selectDefaultAfterCall() {
+  defaultTimerId = undefined;
+  selectDefault({ notify: true }).catch((error) =>
+    console.warn(
+      `Unable to apply default audio settings: ${getXapiErrorMessage(error)}`,
     ),
   );
 }
@@ -280,12 +295,30 @@ function normalizeConfigValue(value) {
   return String(value).trim().toLowerCase();
 }
 
-async function selectDefault() {
+async function selectDefault({ notify = false } = {}) {
   groupModes = groups.map(({ default: defaultMode }) =>
     defaultMode === true ? groupModeOn : groupModeOff,
   );
   await saveButtons();
   await applyAllGroups();
+
+  if (notify) await showDefaultsAppliedAlert();
+}
+
+async function showDefaultsAppliedAlert() {
+  if (!showAlertWhenApplyDefaults) return;
+
+  try {
+    await xapi.Command.UserInterface.Message.Alert.Display({
+      Duration: 10,
+      Text: "Room audio settings have been reset to defaults.",
+      Title: "Audio Settings",
+    });
+  } catch (error) {
+    console.warn(
+      `Unable to show audio reset alert: ${getXapiErrorMessage(error)}`,
+    );
+  }
 }
 
 async function applyAllGroups() {
