@@ -35,6 +35,9 @@ async function seedEthernetConnectorStreams(xapi, streamsByConnectorId) {
 }
 
 function mockUiExtensionCommands(xapi) {
+  xapi.Command.UserInterface.Message.Prompt.Display.mockResolvedValue({
+    status: "OK",
+  });
   xapi.Command.UserInterface.Extensions.Icon.List.mockResolvedValue({
     Icon: [],
   });
@@ -68,7 +71,7 @@ function getLastPanelXml(xapi, panelId) {
   return calls.at(-1)?.[1];
 }
 
-async function loadMacroWithXapi({ productPlatform } = {}) {
+async function loadMacroWithXapi({ activeCalls, productPlatform } = {}) {
   const { default: xapi } = await import("xapi");
 
   jest.clearAllMocks();
@@ -77,6 +80,10 @@ async function loadMacroWithXapi({ productPlatform } = {}) {
 
   if (productPlatform) {
     await xapi.Status.SystemUnit.ProductPlatform.set(productPlatform);
+  }
+
+  if (typeof activeCalls != "undefined") {
+    await xapi.Status.SystemUnit.State.NumberOfActiveCalls.set(activeCalls);
   }
 
   await seedEthernetConnectorStreams(xapi, {
@@ -109,11 +116,11 @@ describe("audio-toggle macro", () => {
 
     expect(xapi.Command.UserInterface.Extensions.Panel.Save).toHaveBeenCalledWith(
       { PanelId: "audioToggle-0" },
-      expect.stringContaining("<CustomIcon><Id>green</Id></CustomIcon>"),
+      expect.stringContaining("<CustomIcon><Id>audioToggleGreen</Id></CustomIcon>"),
     );
     expect(xapi.Command.UserInterface.Extensions.Panel.Save).toHaveBeenCalledWith(
       { PanelId: "audioToggle-2" },
-      expect.stringContaining("<CustomIcon><Id>red</Id></CustomIcon>"),
+      expect.stringContaining("<CustomIcon><Id>audioToggleRed</Id></CustomIcon>"),
     );
 
     expect(xapi.Config.Audio.Input.Ethernet[1].Mode.get()).toBe("On");
@@ -125,6 +132,24 @@ describe("audio-toggle macro", () => {
     expect(xapi.Config.Audio.Input.Microphone[2].Mode.get()).toBe("On");
     expect(xapi.Config.Audio.Input.Microphone[5].Mode.get()).toBe("Off");
     expect(xapi.Config.Audio.Input.Microphone[6].Mode.get()).toBe("Off");
+  });
+
+  it("saves custom icon IDs with alphanumeric-only characters", async () => {
+    const xapi = await loadMacroWithXapi();
+    const uploadedIconIds =
+      xapi.Command.UserInterface.Extensions.Icon.Upload.mock.calls.map(
+        ([{ Id }]) => Id,
+      );
+
+    expect(uploadedIconIds).toEqual([
+      "audioToggleRed",
+      "audioToggleGreen",
+      "audioToggleOrange",
+    ]);
+
+    for (let i = 0; i < uploadedIconIds.length; i++) {
+      expect(uploadedIconIds[i]).toMatch(/^[A-Za-z0-9]+$/);
+    }
   });
 
   it("toggles every audio input in a group when that group button is tapped", async () => {
@@ -142,7 +167,7 @@ describe("audio-toggle macro", () => {
 
     expect(xapi.Command.UserInterface.Extensions.Panel.Save).toHaveBeenCalledWith(
       { PanelId: "audioToggle-0" },
-      expect.stringContaining("<CustomIcon><Id>red</Id></CustomIcon>"),
+      expect.stringContaining("<CustomIcon><Id>audioToggleRed</Id></CustomIcon>"),
     );
   });
 
@@ -164,6 +189,30 @@ describe("audio-toggle macro", () => {
     expect(xapi.Config.Audio.Input.Microphone[6].Mode.get()).toBe("On");
   });
 
+  it("shows a prompt when a call ends before resetting audio defaults", async () => {
+    const xapi = await loadMacroWithXapi({ activeCalls: 1 });
+    xapi.Command.UserInterface.Message.Prompt.Display.mockClear();
+
+    jest.useFakeTimers();
+    try {
+      await xapi.Status.SystemUnit.State.NumberOfActiveCalls.set(0);
+
+      expect(
+        xapi.Command.UserInterface.Message.Prompt.Display,
+      ).toHaveBeenCalledWith({
+        Duration: 300,
+        FeedbackId: "audioToggle",
+        "Option.1": "Cancel Audio Reset",
+        "Option.2": "Reset Audio Now",
+        Text: "Audio settings will reset to defaults in 5 minutes.",
+        Title: "Audio Settings",
+      });
+    } finally {
+      jest.clearAllTimers();
+      jest.useRealTimers();
+    }
+  });
+
   it("updates the group button color when admins change mic config directly", async () => {
     const xapi = await loadMacroWithXapi();
     const panelId = "audioToggle-0";
@@ -174,7 +223,7 @@ describe("audio-toggle macro", () => {
     await flushMacroTasks();
 
     expect(getLastPanelXml(xapi, panelId)).toEqual(
-      expect.stringContaining("<CustomIcon><Id>orange</Id></CustomIcon>"),
+      expect.stringContaining("<CustomIcon><Id>audioToggleOrange</Id></CustomIcon>"),
     );
 
     xapi.Config.Audio.Input.Ethernet[1].Mode.set("Off");
@@ -183,7 +232,7 @@ describe("audio-toggle macro", () => {
     await flushMacroTasks();
 
     expect(getLastPanelXml(xapi, panelId)).toEqual(
-      expect.stringContaining("<CustomIcon><Id>red</Id></CustomIcon>"),
+      expect.stringContaining("<CustomIcon><Id>audioToggleRed</Id></CustomIcon>"),
     );
 
     xapi.Config.Audio.Input.Ethernet[1].Mode.set("On");
@@ -193,7 +242,7 @@ describe("audio-toggle macro", () => {
     await flushMacroTasks();
 
     expect(getLastPanelXml(xapi, panelId)).toEqual(
-      expect.stringContaining("<CustomIcon><Id>green</Id></CustomIcon>"),
+      expect.stringContaining("<CustomIcon><Id>audioToggleGreen</Id></CustomIcon>"),
     );
   });
 
