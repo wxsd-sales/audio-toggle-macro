@@ -1,0 +1,28 @@
+{
+  "name": "audio-toggle-macro",
+  "version": "1.0.0",
+  "description": "Cisco Collaboration Macro which creates custom action buttons that act as a toggle group which can be used to apply audio configuration changes",
+  "type": "module",
+  "main": "audio-toggle.js",
+  "scripts": {
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
+  },
+  "keywords": [
+    "cisco",
+    "macro",
+    "collaboration"
+  ],
+  "author": "William Mills",
+  "license": "MIT",
+  "jest": {
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^xapi$": "jest-mock-xapi"
+    },
+    "transform": {}
+  },
+  "devDependencies": {
+    "jest": "^30.3.0",
+    "jest-mock-xapi": "^1.0.4"
+  }
+}

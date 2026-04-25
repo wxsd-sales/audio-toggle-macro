@@ -1,76 +1,56 @@
 # Audio Toggle Macro
 
-This is an example macro that shows how to create custom action buttons that act as a toggle group which can be used to apply audio configuration changes.
+This macro creates custom RoomOS Control Panel buttons that independently toggle groups of audio inputs. Each group can include Ethernet microphones, analog microphone inputs, and USB-C microphones, letting users quickly turn the microphones for a specific area or use case on or off.
 
 ![Control Panel Screenshot](/images/control-panel.png)
 
 ## Overview
 
-This macro lets you easily create custom action buttons on the Control Panel which change color and icon to indicate which audio mode has been set.
+This macro lets you create up to four custom action buttons on the Control Panel. Each button represents one microphone group and acts as its own toggle.
 
-Upon startup, the macro will create the buttons from the macro config and activate a default mode.
+Upon startup, the macro validates the group configuration, creates the buttons, maps Ethernet microphones by MAC address, and applies the configured default state for each group.
 
-When a mode is activated, it will show as a green microphone icon and when not activated, it will show as a red muted icon.
+When a user taps a group button, the macro sets every supported audio input in that group to the same mode:
 
-Example macro config below
+- Green microphone icon: every available input in the group is `On`.
+- Red muted icon: every available input in the group is `Off`.
+- Orange microphone icon: the group is in a mixed state, meaning some inputs are `On` and some are `Off`.
+
+The orange mixed state is useful when an admin manually changes microphone mode settings outside the macro and leaves a group misconfigured. The macro monitors microphone and Ethernet input mode changes and updates the button color to reflect the actual state of the group.
+
+Ethernet microphones are configured by MAC address because the RoomOS Ethernet input ID can vary between devices or after reconnects. The macro uses the Ethernet microphone stream name, which matches the microphone MAC address, to map each configured MAC to its current RoomOS Ethernet input ID before applying changes.
+
+Example macro config below:
 
 ```javascript
-const modes = [               // Array of Audio Modes
+const groups = [
   {
-    name: 'Mode 1',           // Give the node a unique name
-    config: () => {           // Each mode should have a config function
-
-      // Specify all xConfigs changes for the given mode
-      // Keep in mind that audio inputs and xConfig 
-      // options vary between devices
-
-      // Example where Mode 1 Sets Ethernet 1 On and 3 - 4 Off
-      xapi.Config.Audio.Input.Ethernet[1].Mode.set('On');
-      xapi.Config.Audio.Input.Ethernet[2].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[3].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[4].Mode.set('Off');
-    }
+    name: "Presenter",
+    ethernetMacs: ["11:11:11:11:11:11", "22:22:22:22:22:22"],
+    microphoneIds: [1, 2],
+    default: true,
   },
   {
-    name: 'Mode 2',
-    config: () => {
-      // Example where Mode 2 Sets Ethernet 2 On and 1, 3, 4 Off
-      xapi.Config.Audio.Input.Ethernet[1].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[2].Mode.set('On');
-      xapi.Config.Audio.Input.Ethernet[3].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[4].Mode.set('Off');
-    }
+    name: "Audience",
+    ethernetMacs: ["33:33:33:33:33:33"],
+    microphoneIds: [3, 4],
+    default: false,
   },
   {
-    name: 'Mode 3',
-    config: () => {
-      // Example where Mode 3 Sets Ethernet 3 On and 1, 2, 4 Off
-      xapi.Config.Audio.Input.Ethernet[1].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[2].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[3].Mode.set('On');
-      xapi.Config.Audio.Input.Ethernet[4].Mode.set('Off');
-    }
+    name: "USB Mic",
+    usbMicrophone: [1],
+    default: false,
   },
-  {
-    name: 'Mode 4',
-    config: () => {
-      // Example where Mode 4 Sets Ethernet 4 On and 1, 2, 3 Off
-      xapi.Config.Audio.Input.Ethernet[1].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[2].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[3].Mode.set('Off');
-      xapi.Config.Audio.Input.Ethernet[4].Mode.set('On');
-    }
-  }
-]
-
-const defaultMode = 'Mode 1';       // Name of the mode which is applied when the macro starts
-
+];
 ```
 
-Lastly, the macro by default automatically applies the default audio mode upon joining a new RoomOS or MTR call. This feature can be disabled by setting the  `newCallApplyDefault` in the macros config to `false`.
+The macro also validates the group configuration at startup. There must be at least one group and no more than four groups. Group names must be unique and each configured microphone value must only appear once across all groups.
+
+Lastly, the macro can automatically reapply the default group states after a call ends. This feature can be disabled by setting `applyDefaultAfterCall` in the macro config to `false`.
 
 ```javascript
-const newCallApplyDefault = true;   // can be set to true or false
+const applyDefaultAfterCall = true;
+const applyDefaultDelayMinutes = 5;
 ```
 
 
@@ -85,7 +65,7 @@ const newCallApplyDefault = true;   // can be set to true or false
 ### Installation Steps:
 
 1. Download the ``audio-toggle.js`` file and upload it to your Webex Devices Macro editor via the web interface.
-2. Configure the macros modes and other settings, there are comments in the config section to help with this.
+2. Configure the macro groups and other settings, there are comments in the config section to help with this.
 3. Enable the Macro on the editor.
 
 ## Demo
@@ -103,4 +83,4 @@ Everything included is for demo and Proof of Concept purposes only. Use of the s
 
 
 ## Questions
-Please contact the WXSD team at [wxsd@external.cisco.com](mailto:wxsd@external.cisco.com?subject=Audio-Toggle-Macro) for questions. Or, if you're a Cisco internal employee, reach out to us on the Webex App via our bot (globalexpert@webex.bot). In the "Engagement Type" field, choose the "API/SDK Proof of Concept Integration Development" option to make sure you reach our team. 
+Please contact the WXSD team at [wxsd@external.cisco.com](mailto:wxsd@external.cisco.com?subject=Audio-Toggle-Macro) for questions. Or, if you're a Cisco internal employee, reach out to us on the Webex App via our bot (globalexpert@webex.bot). In the "Engagement Type" field, choose the "API/SDK Proof of Concept Integration Development" option to make sure you reach our team.
