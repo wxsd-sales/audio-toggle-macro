@@ -59,6 +59,14 @@ When `allowUserCancelDefaults` is `true`, the macro waits for `applyDefaultDelay
 
 When `showAlertWhenApplyDefaults` is `true`, the macro shows a RoomOS message alert after the default audio settings have been reapplied. This notification tells users in the room that the audio settings have been reset to defaults. Set it to `false` to reset silently. The startup default apply does not show this alert.
 
+## Config Wizard
+
+A static configuration wizard is available in [`web/index.html`](web/index.html). It validates group names, Ethernet microphone MAC addresses, microphone IDs, USB microphone ID `1`, and prevents reusing configured audio inputs across groups.
+
+When served from this repository, the wizard loads `audio-toggle.js` and exports a complete macro with the generated config block already inserted.
+
+The repository includes a GitHub Pages workflow that publishes the wizard as a static site and includes `audio-toggle.js` in the published artifact for macro export. In the repository Pages settings, set **Build and deployment** to **GitHub Actions**.
+
 
 ## Setup
 

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Audio Toggle Macro Config Wizard</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">AT</span>
+          <div>
+            <h1>Audio Toggle</h1>
+            <p>Macro Config</p>
+          </div>
+        </div>
+
+        <nav class="step-nav" id="stepNav" aria-label="Wizard steps"></nav>
+
+        <section class="control-preview" aria-label="Control panel button preview">
+          <div class="control-preview-header">
+            <span>Control Panel</span>
+            <span>Preview</span>
+          </div>
+          <div class="control-button-grid" id="buttonPreview"></div>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="stepEyebrow">Groups</p>
+            <h2 id="stepTitle">Configure Groups</h2>
+          </div>
+          <div class="top-actions">
+            <button class="button secondary" type="button" id="addGroupButton">
+              <span aria-hidden="true">+</span>
+              Add Group
+            </button>
+            <button class="button primary" type="button" id="goExportButton">
+              Export
+            </button>
+          </div>
+        </header>
+
+        <section class="summary" id="summary" aria-live="polite"></section>
+        <section class="content" id="content"></section>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

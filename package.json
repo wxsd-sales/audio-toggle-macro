@@ -5,6 +5,8 @@
   "type": "module",
   "main": "audio-toggle.js",
   "scripts": {
+    "check:web": "node scripts/check-web.js",
+    "serve:web": "node scripts/serve-web.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
   },
   "keywords": [
