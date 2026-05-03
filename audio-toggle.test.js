@@ -15,6 +15,7 @@ const PRODUCT_PLATFORMS = [
   "Codec Pro",
   "Codec Pro G2",
 ];
+const DEFAULT_PRODUCT_PLATFORM = "Codec Pro";
 
 async function flushMacroTasks() {
   for (let i = 0; i < 10; i++) {
@@ -74,11 +75,13 @@ function getLastPanelXml(xapi, panelId) {
   return calls.at(-1)?.[1];
 }
 
-async function loadMacroWithXapi({ activeCalls, productPlatform } = {}) {
+async function loadMacroWithXapi({
+  activeCalls,
+  productPlatform = DEFAULT_PRODUCT_PLATFORM,
+} = {}) {
   const { default: xapi } = await import("xapi");
 
-  jest.clearAllMocks();
-  xapi.removeAllListeners();
+  xapi.reset();
   mockUiExtensionCommands(xapi);
 
   if (productPlatform) {
@@ -126,15 +129,31 @@ describe("audio-toggle macro", () => {
       expect.stringContaining("<CustomIcon><Id>audioToggleRed</Id></CustomIcon>"),
     );
 
-    expect(xapi.Config.Audio.Input.Ethernet[1].Mode.get()).toBe("On");
-    expect(xapi.Config.Audio.Input.Ethernet[2].Mode.get()).toBe("On");
-    expect(xapi.Config.Audio.Input.Ethernet[3].Mode.get()).toBe("On");
-    expect(xapi.Config.Audio.Input.Ethernet[4].Mode.get()).toBe("On");
+    await expect(xapi.Config.Audio.Input.Ethernet[1].Mode.get()).resolves.toBe(
+      "On",
+    );
+    await expect(xapi.Config.Audio.Input.Ethernet[2].Mode.get()).resolves.toBe(
+      "On",
+    );
+    await expect(xapi.Config.Audio.Input.Ethernet[3].Mode.get()).resolves.toBe(
+      "On",
+    );
+    await expect(xapi.Config.Audio.Input.Ethernet[4].Mode.get()).resolves.toBe(
+      "On",
+    );
 
-    expect(xapi.Config.Audio.Input.Microphone[1].Mode.get()).toBe("On");
-    expect(xapi.Config.Audio.Input.Microphone[2].Mode.get()).toBe("On");
-    expect(xapi.Config.Audio.Input.Microphone[5].Mode.get()).toBe("Off");
-    expect(xapi.Config.Audio.Input.Microphone[6].Mode.get()).toBe("Off");
+    await expect(xapi.Config.Audio.Input.Microphone[1].Mode.get()).resolves.toBe(
+      "On",
+    );
+    await expect(xapi.Config.Audio.Input.Microphone[2].Mode.get()).resolves.toBe(
+      "On",
+    );
+    await expect(xapi.Config.Audio.Input.Microphone[5].Mode.get()).resolves.toBe(
+      "Off",
+    );
+    await expect(xapi.Config.Audio.Input.Microphone[6].Mode.get()).resolves.toBe(
+      "Off",
+    );
   });
 
   it("saves custom icon IDs with alphanumeric-only characters", async () => {
@@ -163,10 +182,18 @@ describe("audio-toggle macro", () => {
     });
     await flushMacroTasks();
 
-    expect(xapi.Config.Audio.Input.Ethernet[1].Mode.get()).toBe("Off");
-    expect(xapi.Config.Audio.Input.Ethernet[2].Mode.get()).toBe("Off");
-    expect(xapi.Config.Audio.Input.Microphone[1].Mode.get()).toBe("Off");
-    expect(xapi.Config.Audio.Input.Microphone[2].Mode.get()).toBe("Off");
+    await expect(xapi.Config.Audio.Input.Ethernet[1].Mode.get()).resolves.toBe(
+      "Off",
+    );
+    await expect(xapi.Config.Audio.Input.Ethernet[2].Mode.get()).resolves.toBe(
+      "Off",
+    );
+    await expect(xapi.Config.Audio.Input.Microphone[1].Mode.get()).resolves.toBe(
+      "Off",
+    );
+    await expect(xapi.Config.Audio.Input.Microphone[2].Mode.get()).resolves.toBe(
+      "Off",
+    );
 
     expect(xapi.Command.UserInterface.Extensions.Panel.Save).toHaveBeenCalledWith(
       { PanelId: "audioToggle-0" },
@@ -187,9 +214,15 @@ describe("audio-toggle macro", () => {
     });
     await flushMacroTasks();
 
-    expect(xapi.Config.Audio.Input.Ethernet[6].Mode.get()).toBe("On");
-    expect(xapi.Config.Audio.Input.Microphone[5].Mode.get()).toBe("On");
-    expect(xapi.Config.Audio.Input.Microphone[6].Mode.get()).toBe("On");
+    await expect(xapi.Config.Audio.Input.Ethernet[6].Mode.get()).resolves.toBe(
+      "On",
+    );
+    await expect(xapi.Config.Audio.Input.Microphone[5].Mode.get()).resolves.toBe(
+      "On",
+    );
+    await expect(xapi.Config.Audio.Input.Microphone[6].Mode.get()).resolves.toBe(
+      "On",
+    );
   });
 
   it("shows a prompt when a call ends before resetting audio defaults", async () => {
@@ -244,26 +277,26 @@ describe("audio-toggle macro", () => {
 
     xapi.Command.UserInterface.Extensions.Panel.Save.mockClear();
 
-    xapi.Config.Audio.Input.Microphone[1].Mode.set("Off");
+    await xapi.Config.Audio.Input.Microphone[1].Mode.set("Off");
     await flushMacroTasks();
 
     expect(getLastPanelXml(xapi, panelId)).toEqual(
       expect.stringContaining("<CustomIcon><Id>audioToggleOrange</Id></CustomIcon>"),
     );
 
-    xapi.Config.Audio.Input.Ethernet[1].Mode.set("Off");
-    xapi.Config.Audio.Input.Ethernet[2].Mode.set("Off");
-    xapi.Config.Audio.Input.Microphone[2].Mode.set("Off");
+    await xapi.Config.Audio.Input.Ethernet[1].Mode.set("Off");
+    await xapi.Config.Audio.Input.Ethernet[2].Mode.set("Off");
+    await xapi.Config.Audio.Input.Microphone[2].Mode.set("Off");
     await flushMacroTasks();
 
     expect(getLastPanelXml(xapi, panelId)).toEqual(
       expect.stringContaining("<CustomIcon><Id>audioToggleRed</Id></CustomIcon>"),
     );
 
-    xapi.Config.Audio.Input.Ethernet[1].Mode.set("On");
-    xapi.Config.Audio.Input.Ethernet[2].Mode.set("On");
-    xapi.Config.Audio.Input.Microphone[1].Mode.set("On");
-    xapi.Config.Audio.Input.Microphone[2].Mode.set("On");
+    await xapi.Config.Audio.Input.Ethernet[1].Mode.set("On");
+    await xapi.Config.Audio.Input.Ethernet[2].Mode.set("On");
+    await xapi.Config.Audio.Input.Microphone[1].Mode.set("On");
+    await xapi.Config.Audio.Input.Microphone[2].Mode.set("On");
     await flushMacroTasks();
 
     expect(getLastPanelXml(xapi, panelId)).toEqual(
